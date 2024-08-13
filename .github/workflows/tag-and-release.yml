@@ -139,7 +139,7 @@ jobs:
         uses: actions/checkout@v4  # trusting github's internally developed action (not trusting others, so pinning at sha)
 
       - name: version
-        uses: mathieudutour/github-tag-action@a22cf08  # v6.2
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
         with:
           release_branches: ${{ inputs.release_branches }}
           pre_release_branches: ${{ inputs.pre_release_branches }}
@@ -153,7 +153,7 @@ jobs:
 
       - name: release
         if: ${{ inputs.dry_run != 'tag' }}
-        uses: ncipollo/release-action@2c591bc  # v1.14.0
+        uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5  # v1.14.0
         with:
           allowUpdates: ${{ inputs.allowUpdates }}
           artifactErrorsFailBuild: ${{ inputs.artifactErrorsFailBuild }}
