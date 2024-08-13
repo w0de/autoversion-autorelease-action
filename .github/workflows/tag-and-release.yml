@@ -134,6 +134,7 @@ jobs:
         uses: actions/checkout@v4  # trusting github's internally developed action (not trusting others, so pinning at sha)
 
       - name: version
+        id: version
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
         with:
           release_branches: ${{ inputs.release_branches }}
@@ -147,6 +148,7 @@ jobs:
           commit_sha: ${{ inputs.commit_sha }}
 
       - name: release
+        id: release
         if: ${{ inputs.dry_run != 'tag' }}
         uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5  # v1.14.0
         with:
@@ -172,6 +174,7 @@ jobs:
           updateOnlyUnreleased: ${{ inputs.updateOnlyUnreleased }}
 
       - name: cleanup release
+        id: cleanup
         if: ${{ inputs.dry_run == 'draft-cleanup' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
