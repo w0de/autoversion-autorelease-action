@@ -22,16 +22,10 @@ jobs:
   release:
     environment: production
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: release
-        uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
-        with:
-          create_annotated_tag: true
-          github_token: ${{ secrets.github_token }}
+    uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
+    with:
+      create_annotated_tag: true
+      github_token: ${{ secrets.github_token }}
 ```
 
 ### Inputs
