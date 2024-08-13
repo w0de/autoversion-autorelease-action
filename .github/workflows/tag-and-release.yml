@@ -109,13 +109,8 @@ on:
         required: true
 
 jobs:
-  autoversion_and_autorelease:
-    id: main
+  main:
     runs-on: ubuntu-latest
-
-    permissions:
-      id-token: write
-      contents: write
 
     outputs:
       changelog: ${{ steps.version.outputs.changelog }}
