@@ -68,7 +68,12 @@ on:
         required: false
         default: null
       dry_run:
-        description: Generate new version tag and output to log. Do not apply tag or create release.
+        description: |
+          Generate new version tag and output to log. One of:
+          - false
+          - true (output putative new tag to log)
+          - "draft" (apply new version tag prefixed with "draft_", create draft release)
+          - "draft-cleanup" (same as "draft", but release and tag are deleted after creation)
         required: false
         default: false
 
@@ -132,14 +137,14 @@ jobs:
           pre_release_branches: ${{ inputs.pre_release_branches }}
           default_bump: ${{ inputs.default_bump }}
           default_prerelease_bump: pre${{ inputs.default_bump }}
-          tag_prefix: ${{ inputs.tag_prefix }}
-          dry_run: ${{ inputs.dry_run }}
+          tag_prefix: ${{ (inputs.dry_run != true && inputs.dry_run != false && contains(inputs.dry_run, "draft")) && 'draft_' || inputs.tag_prefix }}
+          dry_run: ${{ inputs.dry_run == true }}
           github_token: ${{ secrets.github_token }}
           create_annotated_tag: ${{ inputs.create_annotated_tag }}
           commit_sha: ${{ inputs.commit_sha }}
 
       - name: release
-        if: ${{ ! inputs.dry_run }}
+        if: ${{ inputs.dry_run != true }}
         uses: ncipollo/release-action@2c591bc  # v1.14.0
         with:
           allowUpdates: ${{ inputs.allowUpdates }}
@@ -147,7 +152,7 @@ jobs:
           artifacts: ${{ inputs.artifacts }}
           body: ${{ steps.version.outputs.changelog }}
           commit: ${{ inputs.commit_sha }}
-          draft: ${{ inputs.draft }}
+          draft: ${{ inputs.draft || inputs.dry_run != false }}
           generateReleaseNotes: ${{ inputs.generateReleaseNotes }}
           makeLatest: ${{ inputs.makeLatest }}
           name: ${{ inputs.name || steps.version.outputs.new_version }}
@@ -162,3 +167,10 @@ jobs:
           tag: ${{ steps.version.outputs.new_tag }}
           token: ${{ inputs.github_token }}
           updateOnlyUnreleased: ${{ inputs.updateOnlyUnreleased }}
+
+    - name: cleanup release
+      if: ${{ inputs.dry_run == 'draft-cleanup' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.github_token }}
+      run: gh release delete -y --cleanup-tag ${{ steps.version.new_tag }}
+

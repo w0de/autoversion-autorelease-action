@@ -108,7 +108,12 @@ jobs:
         required: false
         default: null
       dry_run:
-        description: Generate new version tag and output to log. Do not apply tag or create release.
+        description: |
+          Generate new version tag and output to log. One of:
+          - false
+          - true (output putative new tag to log)
+          - "draft" (apply new version tag prefixed with "draft_", create draft release)
+          - "draft-cleanup" (same as "draft", but release and tag are deleted after creation)
         required: false
         default: false
 ```
