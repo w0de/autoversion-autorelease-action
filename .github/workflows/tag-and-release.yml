@@ -104,7 +104,7 @@ on:
         value: ${{ jobs.main.outputs.release_url }}
 
     secrets:
-      github_token:
+      token:
         description: The github token to use when applying tag.
         required: true
 
@@ -135,7 +135,7 @@ jobs:
           default_prerelease_bump: pre${{ inputs.default_bump }}
           tag_prefix: ${{ (inputs.dry_run != true && inputs.dry_run != false && contains(inputs.dry_run, "draft")) && 'draft_' || inputs.tag_prefix }}
           dry_run: ${{ inputs.dry_run == true }}
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ secrets.token }}
           create_annotated_tag: ${{ inputs.create_annotated_tag }}
           commit_sha: ${{ inputs.commit_sha }}
 
@@ -167,5 +167,5 @@ jobs:
       - name: cleanup release
         if: ${{ inputs.dry_run == 'draft-cleanup' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
+          GITHUB_TOKEN: ${{ secrets.token }}
         run: gh release delete -y --cleanup-tag ${{ steps.version.new_tag }}

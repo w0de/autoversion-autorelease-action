@@ -25,14 +25,14 @@ jobs:
     uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
     with:
       create_annotated_tag: true
-      github_token: ${{ secrets.github_token }}
+      token: ${{ secrets.github_token }}
 ```
 
 ### Inputs
 
 ```yml
     secrets:
-      github_token:
+      token:
         description: The github token to use when applying tag.
         required: true
 
