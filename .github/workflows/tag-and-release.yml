@@ -156,7 +156,7 @@ jobs:
           artifactErrorsFailBuild: ${{ inputs.artifactErrorsFailBuild }}
           artifacts: ${{ inputs.artifacts }}
           body: ${{ steps.version.outputs.changelog }}
-          commit: refs/tags/${{ steps.version.outputs.new_tag }}
+          commit: ${{ inputs.commit_sha }}
           draft: ${{ inputs.draft || contains(inputs.dry_run, 'draft') }}
           generateReleaseNotes: ${{ inputs.generateReleaseNotes }}
           makeLatest: ${{ inputs.makeLatest }}
