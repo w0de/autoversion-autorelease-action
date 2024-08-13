@@ -108,6 +108,7 @@ on:
         description: The github token to use when applying tag.
         required: true
 
+
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -163,9 +164,9 @@ jobs:
           token: ${{ inputs.github_token }}
           updateOnlyUnreleased: ${{ inputs.updateOnlyUnreleased }}
 
-    - name: cleanup release
-      if: ${{ inputs.dry_run == 'draft-cleanup' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.github_token }}
-      run: gh release delete -y --cleanup-tag ${{ steps.version.new_tag }}
+      - name: cleanup release
+        if: ${{ inputs.dry_run == 'draft-cleanup' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        run: gh release delete -y --cleanup-tag ${{ steps.version.new_tag }}
 
