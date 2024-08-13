@@ -93,27 +93,27 @@ on:
       # mathieudutour/github-tag-action
       changelog:
         description: The conventional changelog since the previous tag.
-        value: ${{ jobs.main.outputs.changelog }}
+        value: ${{ jobs.autorelease.outputs.changelog }}
       new_version:
         description: The auto-bumped version.
-        value: ${{ jobs.main.outputs.new_version }}
+        value: ${{ jobs.autorelease.outputs.new_version }}
       new_tag:
         description: The auto-bumped version tag.
-        value: ${{ jobs.main.outputs.new_tag }}
+        value: ${{ jobs.autorelease.outputs.new_tag }}
       release_type:
         description: The auto-bumped versions release type.
-        value: ${{ jobs.main.outputs.release_type }}
+        value: ${{ jobs.autorelease.outputs.release_type }}
 
       # ncipollo/release-action
       artifact_upload_url:
         description: The URL for uploading assets to the release.
-        value: ${{ jobs.main.outputs.artifact_upload_url }}
+        value: ${{ jobs.autorelease.outputs.artifact_upload_url }}
       release_id:
         description: The identifier of the created release.
-        value: ${{ jobs.main.outputs.release_id }}
+        value: ${{ jobs.autorelease.outputs.release_id }}
       release_url:
         description: The HTML URL of the release.
-        value: ${{ jobs.main.outputs.release_url }}
+        value: ${{ jobs.autorelease.outputs.release_url }}
 
     secrets:
       token:
@@ -122,7 +122,7 @@ on:
 
 
 jobs:
-  main:
+  autorelease:
     runs-on: ubuntu-latest
 
     outputs:
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@latest  # trusting github's internally developed action (not trusting others, so pinning at sha)
+        uses: actions/checkout@v4  # trusting github's internally developed action (not trusting others, so pinning at sha)
 
       - name: version
         uses: mathieudutour/github-tag-action@a22cf08  # v6.2
