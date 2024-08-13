@@ -80,7 +80,7 @@ on:
     outputs:
       # mathieudutour/github-tag-action
       changelog:
-        description:  The conventional changelog since the previous tag.
+        description: The conventional changelog since the previous tag.
         value: ${{ jobs.main.outputs.changelog }}
       new_version:
         description: The auto-bumped version.
@@ -169,4 +169,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
         run: gh release delete -y --cleanup-tag ${{ steps.version.new_tag }}
-
