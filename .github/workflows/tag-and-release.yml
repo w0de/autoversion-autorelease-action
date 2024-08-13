@@ -28,6 +28,11 @@ on:
         required: false
         default: v
         type: string
+      use_branch_name_bump:
+        description: Adjust semantic version bump based on branch name prefix. Branches prefixed with "patch/", "minor/", or "major/" will adjust version bump.
+        required: false
+        default: false
+        type: boolean
 
       # ncipollo/release-action
       allowUpdates:
@@ -133,14 +138,26 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4  # trusting github's internally developed action (not trusting others, so pinning at sha)
 
+      - name: set semantic version bump type
+        id: bump
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          bump=${{ inputs.default_bump }}
+          ref=$(echo $REF_NAME | awk -F '/' '{print $1}')
+          if [ "$ref" = "patch" ] | [ "$ref" = "minor" ] | [ "$ref" = "major" ]; then
+            bump=$ref
+          fi
+          echo "bump=$bump" >> $GITHUB_OUTPUT 
+
       - name: version
         id: version
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
         with:
           release_branches: ${{ inputs.release_branches }}
           pre_release_branches: ${{ inputs.pre_release_branches }}
-          default_bump: ${{ inputs.default_bump }}
-          default_prerelease_bump: pre${{ inputs.default_bump }}
+          default_bump: ${{ steps.bump.outputs.bump }}
+          default_prerelease_bump: pre${{ steps.bump.outputs.bump }}
           tag_prefix: ${{ contains(inputs.dry_run, 'draft') && 'draft_' || inputs.tag_prefix }}
           dry_run: ${{ inputs.dry_run == 'tag' }}
           github_token: ${{ github.token }}
@@ -161,10 +178,10 @@ jobs:
           generateReleaseNotes: ${{ inputs.generateReleaseNotes }}
           makeLatest: ${{ inputs.makeLatest }}
           name: ${{ inputs.name || steps.version.outputs.new_version }}
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
+          omitBodyDuringUpdate: false
+          omitDraftDuringUpdate: false
+          omitNameDuringUpdate: false
+          omitPrereleaseDuringUpdate: false
           prerelease: ${{ contains(steps.version.outputs.release_type, 'pre') }}
           removeArtifacts: true
           replacesArtifacts: true
