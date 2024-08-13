@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: release
-        uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml
+        uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
         with:
           create_annotated_tag: true
           github_token: ${{ secrets.github_token }}
