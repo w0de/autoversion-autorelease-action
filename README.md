@@ -25,6 +25,7 @@ jobs:
     uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
     with:
       create_annotated_tag: true
+    secrets:
       token: ${{ github.token }}
 ```
 
