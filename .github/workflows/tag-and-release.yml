@@ -8,74 +8,86 @@ on:
         description: Create an annotated rather than a lightweight tag.
         required: false
         default: false
+        type: boolean
       default_bump:
         description: Can be patch, minor or major.
         required: false
         default: patch
+        type: string
       release_branches:
         description: Comma separated list of branches (JavaScript regular expression accepted) that will generate the release tags.
         required: false
         default: main
+        type: string
       pre_release_branches:
         description: Comma separated list of branches (JavaScript regular expression accepted) that will generate the release tags.
         required: false
         default: .*
+        type: string
       tag_prefix:
         required: false
         default: v
+        type: string
 
       # ncipollo/release-action
       allowUpdates:
         description: An optional flag which indicates if we should update a release if it already exists. Defaults to false.
         required: false
         default: false
+        type: boolean
       artifactErrorsFailBuild:
         description: An optional flag which indicates if artifact read or upload errors should fail the build.
         required: false
         default: true
+        type: boolean
       artifacts:
         description: An optional set of paths representing artifacts to upload to the release. This may be a single path or a comma delimited list of paths (or globs)
         required: false
-        default: ''
+        type: string
       artifactContentType:
         description: The content type of the artifact. Defaults to raw
         required: false
-        default: ''
+        type: string
       draft:
         description: Optionally marks this release as a draft release. Set to true to enable.
         required: false
         default: false
+        type: boolean
       generateReleaseNotes:
         description: Generate release notes instead of using tag step's changelog.
         required: false
         default: false
+        type: boolean
       makeLatest:
         description: Indicates if the release should be the latest release or not.
         required: false
         default: true
+        type: boolean
       name:
         description: Override default version tag name with this custom value.
         required: false
-        default: null
+        type: string
       updateOnlyUnreleased:
         description: When allowUpdates is enabled, this will fail the action if the release it is updating is not a draft or a prerelease.
         required: false
         default: false
+        type: boolean
 
       # both
       commit_sha:
         description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
         required: false
-        default: null
+        type: string
       dry_run:
         description: |
           Generate new version tag and output to log. One of:
-          - false
-          - true (output putative new tag to log)
+          - "disabled" (default, not a dry run)
+          - "tag" (output putative new tag to log)
           - "draft" (apply new version tag prefixed with "draft_", create draft release)
           - "draft-cleanup" (same as "draft", but release and tag are deleted after creation)
         required: false
-        default: false
+        default: disabled
+        type: string
 
     outputs:
       # mathieudutour/github-tag-action
@@ -133,14 +145,14 @@ jobs:
           pre_release_branches: ${{ inputs.pre_release_branches }}
           default_bump: ${{ inputs.default_bump }}
           default_prerelease_bump: pre${{ inputs.default_bump }}
-          tag_prefix: ${{ (inputs.dry_run != true && inputs.dry_run != false && contains(inputs.dry_run, "draft")) && 'draft_' || inputs.tag_prefix }}
-          dry_run: ${{ inputs.dry_run == true }}
+          tag_prefix: ${{ contains(inputs.dry_run, 'draft') && 'draft_' || inputs.tag_prefix }}
+          dry_run: ${{ inputs.dry_run == 'tag' }}
           github_token: ${{ secrets.token }}
           create_annotated_tag: ${{ inputs.create_annotated_tag }}
           commit_sha: ${{ inputs.commit_sha }}
 
       - name: release
-        if: ${{ inputs.dry_run != true }}
+        if: ${{ input.dry_run != 'tag' }}
         uses: ncipollo/release-action@2c591bc  # v1.14.0
         with:
           allowUpdates: ${{ inputs.allowUpdates }}
@@ -148,7 +160,7 @@ jobs:
           artifacts: ${{ inputs.artifacts }}
           body: ${{ steps.version.outputs.changelog }}
           commit: ${{ inputs.commit_sha }}
-          draft: ${{ inputs.draft || inputs.dry_run != false }}
+          draft: ${{ inputs.draft || contains(inputs.dry_run, 'draft') }}
           generateReleaseNotes: ${{ inputs.generateReleaseNotes }}
           makeLatest: ${{ inputs.makeLatest }}
           name: ${{ inputs.name || steps.version.outputs.new_version }}
@@ -161,7 +173,7 @@ jobs:
           replacesArtifacts: true
           skipIfReleaseExists: ${{ ! inputs.allowUpdates }}
           tag: ${{ steps.version.outputs.new_tag }}
-          token: ${{ inputs.github_token }}
+          token: ${{ secrets.token }}
           updateOnlyUnreleased: ${{ inputs.updateOnlyUnreleased }}
 
       - name: cleanup release
