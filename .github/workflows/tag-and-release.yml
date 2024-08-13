@@ -115,11 +115,6 @@ on:
         description: The HTML URL of the release.
         value: ${{ jobs.autorelease.outputs.release_url }}
 
-    secrets:
-      token:
-        description: The github token to use when applying tag.
-        required: true
-
 
 jobs:
   autorelease:
@@ -147,7 +142,7 @@ jobs:
           default_prerelease_bump: pre${{ inputs.default_bump }}
           tag_prefix: ${{ contains(inputs.dry_run, 'draft') && 'draft_' || inputs.tag_prefix }}
           dry_run: ${{ inputs.dry_run == 'tag' }}
-          github_token: ${{ secrets.token }}
+          github_token: ${{ github.token }}
           create_annotated_tag: ${{ inputs.create_annotated_tag }}
           commit_sha: ${{ inputs.commit_sha }}
 
@@ -173,11 +168,11 @@ jobs:
           replacesArtifacts: true
           skipIfReleaseExists: ${{ ! inputs.allowUpdates }}
           tag: ${{ steps.version.outputs.new_tag }}
-          token: ${{ secrets.token }}
+          token: ${{ github.token }}
           updateOnlyUnreleased: ${{ inputs.updateOnlyUnreleased }}
 
       - name: cleanup release
         if: ${{ inputs.dry_run == 'draft-cleanup' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: gh release delete -y --cleanup-tag ${{ steps.version.new_tag }}
