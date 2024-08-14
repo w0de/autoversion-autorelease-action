@@ -21,14 +21,6 @@ on:
         description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
         required: false
         type: string
-      event:
-        description: Must be toJSON(github.event)
-        required: true
-        type: string
-      event_name:
-        description: Must be github.event_name
-        required: true
-        type: string
       default_bump:
         description: Can be patch, minor or major.
         required: false
@@ -109,7 +101,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4  # trusting github's internally developed action (not trusting others, so pinning at sha)
 
-      - name: set version bump type
+      - name: set semantic version bump type
         id: bump
         env:
           REF_NAME: ${{ github.ref_name }}
@@ -119,49 +111,20 @@ jobs:
           if [ "$ref" = "patch" ] | [ "$ref" = "minor" ] | [ "$ref" = "major" ]; then
             bump=$ref
           fi
-          echo "bump=$bump" >> $GITHUB_OUTPUT 
-
-      - name: version dry run
-        id: prior_version
-        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
-        with:
-          # opinionated
-          create_annotated_tag: true
-          dry_run: true
-          pre_release_branches: .*
-          tag_prefix: v
-          # exposed
-          commit_sha: ${{ inputs.commit_sha }}
-          default_bump: ${{ inputs.bump_from_branch_name && steps.bump.outputs.bump || inputs.default_bump }}
-          github_token: ${{ github.token }}
-          release_branches: ${{ inputs.release_branches }}
-          # calculated
-          default_prerelease_bump: pre${{ inputs.bump_from_branch_name && steps.bump.outputs.bump || inputs.default_bump }}
-
-      - name: check if we should use the prior version
-        id: check_version
-        env:
-          PRIOR_VERSION: ${{ contains(steps.prior_version.outputs.release_type, 'pre') && steps.prior_version.outputs.previous_version || '' }}
-        run: |
-          if test -z $PRIOR_VERSION || [ "$(git rev-parse HEAD)" != "$(git rev-list -n 1 $PRIOR_VERSION)" ]; then
-            echo "set_new_version=true" >> $GITHUB_OUTPUT
-          else
-            echo "set_new_version=false" >> $GITHUB_OUTPUT
-          fi
+          echo "bump=$bump" >> $GITHUB_OUTPUT
 
       - name: version
         id: version
-        if: ${{ steps.check_version.outputs.set_new_version == 'true' && !inputs.dry_run && !(contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases)) }}
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
         with:
           # opinionated
           create_annotated_tag: true
-          dry_run: false
           pre_release_branches: .*
           tag_prefix: v
           # exposed
           commit_sha: ${{ inputs.commit_sha }}
           default_bump: ${{ inputs.bump_from_branch_name && steps.bump.outputs.bump || inputs.default_bump }}
+          dry_run: ${{ inputs.dry_run }}
           github_token: ${{ github.token }}
           release_branches: ${{ inputs.release_branches }}
           # calculated
@@ -195,5 +158,5 @@ jobs:
           body: ${{ steps.version.outputs.changelog }}
           makeLatest: ${{ contains(steps.version.outputs.release_type, 'pre') }} # releases are always latest, prerelease are always not
           prerelease: ${{ contains(steps.version.outputs.release_type, 'pre') }} # {pre_}release_branches inputs determine if this is a prerelease
-          tag: ${{ steps.check_version.outputs.set_new_version == 'true' && steps.prior_version.outputs.new_tag || steps.prior_version.outputs.previous_tag }}
+          tag: ${{ steps.version.outputs.new_tag }}
 

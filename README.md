@@ -8,23 +8,44 @@ This reusable workflow combines the two for ease of use. Each action's inputs ar
 
 ### Example
 
+#### Create releases with pushes to main
 ```yml
 name: release
 
 on:
   push:
     branches: [main]
-
+  
 permissions:
   contents: write  # Required push tags.
 
 jobs:
   release:
     environment: production
-    if: github.event_name == 'push'
     uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
     with:
-      create_annotated_tag: true
+      release_branches: main
+    secrets:
+      token: ${{ github.token }}
+```
+
+#### Create prereleases with opened pull requests
+```yml
+name: release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened]
+  
+permissions:
+  contents: write  # Required push tags.
+
+jobs:
+  release:
+    uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
+    with:
+      release_branches: main
     secrets:
       token: ${{ github.token }}
 ```
@@ -49,14 +70,6 @@ jobs:
       commit_sha:
         description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
         required: false
-        type: string
-      event:
-        description: Must be ${{ toJSON(github.event) }}.
-        required: true
-        type: string
-      event_name:
-        description: Must be ${{ github.event_name }}.
-        required: true
         type: string
       default_bump:
         description: Can be patch, minor or major.
