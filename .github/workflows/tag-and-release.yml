@@ -3,96 +3,56 @@ name: autoversion & autorelease
 on:
   workflow_call:
     inputs:
-      # mathieudutour/github-tag-action
-      create_annotated_tag:
-        description: Create an annotated rather than a lightweight tag.
+      artifacts:
+        description: An optional set of paths representing artifacts to upload to the release. This may be a single path or a comma delimited list of paths (or globs)
+        required: false
+        type: string
+      artifacts_content_type:
+        description: The content type of the artifacts. Defaults to raw.
+        required: false
+        type: string
+        default: raw
+      bump_from_branch_name:
+        description: Adjust semantic version bump based on branch name prefix. Branches prefixed with "patch/", "minor/", or "major/" will adjust version bump.
         required: false
         default: false
         type: boolean
+      commit_sha:
+        description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
+        required: false
+        type: string
+        required: false
+        default: disabled
+        type: string
       default_bump:
         description: Can be patch, minor or major.
         required: false
         default: patch
         type: string
-      release_branches:
-        description: Comma separated list of branches (JavaScript regular expression accepted) that will generate the release tags.
+      draft_pre_releases:
+        description: Create draft releases for prerelease branches.
+        required: false
+        default: true
+        type: boolean
+      dry_run:
+        description: Output putative new tag to log. Do not apply tag or create release.
+        required: false
+        default: false
+        type: boolean
+      name:
+        description: Override default release with this custom value.
+        required: false
+        type: string
+      release_branch:
+        description: Refs on this branch are full releases - all other branches, prereleases.
         required: false
         default: main
         type: string
-      pre_release_branches:
-        description: Comma separated list of branches (JavaScript regular expression accepted) that will generate the release tags.
-        required: false
-        default: .*
-        type: string
-      tag_prefix:
-        required: false
-        default: v
-        type: string
-      use_branch_name_bump:
-        description: Adjust semantic version bump based on branch name prefix. Branches prefixed with "patch/", "minor/", or "major/" will adjust version bump.
-        required: false
-        default: false
-        type: boolean
-
-      # ncipollo/release-action
-      allowUpdates:
-        description: An optional flag which indicates if we should update a release if it already exists. Defaults to false.
-        required: false
-        default: false
-        type: boolean
-      artifactErrorsFailBuild:
-        description: An optional flag which indicates if artifact read or upload errors should fail the build.
+      skip_pre_releases:
+        description: Do not create releases for prerelease branches. Overrides draftPrereleases.
         required: false
         default: true
         type: boolean
-      artifacts:
-        description: An optional set of paths representing artifacts to upload to the release. This may be a single path or a comma delimited list of paths (or globs)
-        required: false
-        type: string
-      artifactContentType:
-        description: The content type of the artifact. Defaults to raw
-        required: false
-        type: string
-      draft:
-        description: Optionally marks this release as a draft release. Set to true to enable.
-        required: false
-        default: false
-        type: boolean
-      generateReleaseNotes:
-        description: Generate release notes instead of using tag step's changelog.
-        required: false
-        default: false
-        type: boolean
-      makeLatest:
-        description: Indicates if the release should be the latest release or not.
-        required: false
-        default: true
-        type: boolean
-      name:
-        description: Override default version tag name with this custom value.
-        required: false
-        type: string
-      updateOnlyUnreleased:
-        description: When allowUpdates is enabled, this will fail the action if the release it is updating is not a draft or a prerelease.
-        required: false
-        default: false
-        type: boolean
-
-      # both
-      commit_sha:
-        description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
-        required: false
-        type: string
-      dry_run:
-        description: |
-          Generate new version tag and output to log. One of:
-          - "disabled" (default, not a dry run)
-          - "tag" (output putative new tag to log)
-          - "draft" (apply new version tag prefixed with "draft_", create draft release)
-          - "draft-cleanup" (same as "draft", but release and tag are deleted after creation)
-        required: false
-        default: disabled
-        type: string
 
     outputs:
       # mathieudutour/github-tag-action
@@ -154,45 +114,45 @@ jobs:
         id: version
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
         with:
-          release_branches: ${{ inputs.release_branches }}
-          pre_release_branches: ${{ inputs.pre_release_branches }}
-          default_bump: ${{ steps.bump.outputs.bump }}
-          default_prerelease_bump: pre${{ steps.bump.outputs.bump }}
-          tag_prefix: ${{ contains(inputs.dry_run, 'draft') && 'draft_' || inputs.tag_prefix }}
-          dry_run: ${{ inputs.dry_run == 'tag' }}
-          github_token: ${{ github.token }}
-          create_annotated_tag: ${{ inputs.create_annotated_tag }}
+          # opinionated
+          create_annotated_tag: true
+          pre_release_branches: .*
+          tag_prefix: v
+          # exposed
           commit_sha: ${{ inputs.commit_sha }}
+          default_bump: ${{ inputs.bump_from_branch_name && steps.bump.outputs.bump || inputs.default_bump }}
+          dry_run: ${{ inputs.dry_run }}
+          github_token: ${{ github.token }}
+          release_branches: ${{ inputs.release_branch }}
+          # calculated
+          default_prerelease_bump: pre${{ inputs.bump_from_branch_name && steps.bump.outputs.bump || inputs.default_bump }}
 
       - name: release
         id: release
-        if: ${{ inputs.dry_run != 'tag' }}
+        if: ${{ !(inputs.dry_run || (contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases) }}
         uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5  # v1.14.0
         with:
-          allowUpdates: ${{ inputs.allowUpdates }}
-          artifactErrorsFailBuild: ${{ inputs.artifactErrorsFailBuild }}
-          artifacts: ${{ inputs.artifacts }}
-          body: ${{ steps.version.outputs.changelog }}
-          commit: ${{ inputs.commit_sha }}
-          draft: ${{ inputs.draft || contains(inputs.dry_run, 'draft') }}
-          generateReleaseNotes: ${{ inputs.generateReleaseNotes }}
-          makeLatest: ${{ inputs.makeLatest }}
-          name: ${{ inputs.name || steps.version.outputs.new_version }}
+          # opinionated
+          allowUpdates: true
+          generateReleaseNotes: true
           omitBodyDuringUpdate: false
           omitDraftDuringUpdate: false
           omitNameDuringUpdate: false
           omitPrereleaseDuringUpdate: false
-          prerelease: ${{ contains(steps.version.outputs.release_type, 'pre') }}
           removeArtifacts: true
           replacesArtifacts: true
-          skipIfReleaseExists: ${{ ! inputs.allowUpdates }}
-          tag: ${{ steps.version.outputs.new_tag }}
+          skipIfReleaseExists: false
+          updateOnlyUnreleased: true
+          # exposed
+          artifacts: ${{ inputs.artifacts }}
+          artifactContentType: ${{ inputs.artifacts_content_type }}
+          commit: ${{ inputs.commit_sha }}
+          draft: ${{ !contains(steps.version.outputs.release_type, 'pre') || inputs.draft_pre_releases }}
+          name: ${{ inputs.name || steps.version.outputs.new_version }}
           token: ${{ github.token }}
-          updateOnlyUnreleased: ${{ inputs.updateOnlyUnreleased }}
-
-      - name: cleanup release
-        id: cleanup
-        if: ${{ inputs.dry_run == 'draft-cleanup' }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: gh release delete -y --cleanup-tag ${{ steps.version.new_tag }}
+          # calculated
+          artifactErrorsFailBuild: ${{ contains(steps.version.outputs.release_type, 'pre') }} # prereleases can fail their artifact upload
+          body: ${{ steps.version.outputs.changelog }}
+          makeLatest: ${{ contains(steps.version.outputs.release_type, 'pre') }} # releases are always latest, prerelease are always not
+          prerelease: ${{ contains(steps.version.outputs.release_type, 'pre') }} # {pre_}release_branches inputs determine if this is a prerelease
+          tag: ${{ steps.version.outputs.new_tag }}
