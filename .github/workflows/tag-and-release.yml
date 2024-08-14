@@ -118,6 +118,9 @@ jobs:
           # calculated
           default_prerelease_bump: pre${{ inputs.default_bump }}
 
+      - name: debug
+        run: echo "${{ steps.version.outputs.release_type }}"
+
       - name: release
         id: release
         if: ${{ !(inputs.dry_run || (contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases)) }}
@@ -138,7 +141,7 @@ jobs:
           artifacts: ${{ inputs.artifacts }}
           artifactContentType: ${{ inputs.artifacts_content_type }}
           commit: ${{ inputs.commit_sha }}
-          draft: ${{ !contains(steps.version.outputs.release_type, 'pre') || inputs.draft_pre_releases }}
+          draft: ${{ contains(steps.version.outputs.release_type, 'pre') && inputs.draft_pre_releases }}
           name: ${{ inputs.name || steps.version.outputs.new_version }}
           token: ${{ github.token }}
           # calculated
