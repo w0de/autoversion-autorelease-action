@@ -71,7 +71,6 @@ on:
       release_type:
         description: The auto-bumped versions release type.
         value: ${{ jobs.autorelease.outputs.release_type }}
-
       # ncipollo/release-action
       artifact_upload_url:
         description: The URL for uploading assets to the release.
