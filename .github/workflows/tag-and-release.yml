@@ -80,7 +80,6 @@ on:
 
 jobs:
   autorelease:
-    name: bump & release new version
     runs-on: ubuntu-latest
 
     outputs:
