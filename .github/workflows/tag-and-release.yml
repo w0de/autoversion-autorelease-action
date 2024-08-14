@@ -118,9 +118,6 @@ jobs:
           # calculated
           default_prerelease_bump: "pre${{ inputs.default_bump }}"
 
-      - name: debug
-        run: echo "${{ steps.version.outputs.release_type }}"
-
       - name: release
         id: release
         if: ${{ !(inputs.dry_run || (contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases)) }}
