@@ -170,6 +170,6 @@ jobs:
 
       - name: debug
         run: |
-          echo ${{ github.event_name }}
-          echo ${{ toJSON(github.event) }}
+          echo ${{ inputs.event_name }}
+          echo ${{ inputs.event }} | jq
 
