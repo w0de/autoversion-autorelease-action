@@ -100,6 +100,8 @@ jobs:
       - name: version
         id: version
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
+        env:
+          pre_prefix: ${{ startsWith(inputs.default_bump, 'pre') && '' || 'pre' }}
         with:
           # opinionated
           create_annotated_tag: true
@@ -112,11 +114,11 @@ jobs:
           github_token: ${{ github.token }}
           release_branches: ${{ inputs.release_branches }}
           # calculated
-          default_prerelease_bump: "pre${{ inputs.default_bump }}"
+          default_prerelease_bump: "${{ env.pre_prefix }}${{ inputs.default_bump }}"
 
       - name: release
         id: release
-        if: ${{ !(inputs.dry_run || (fromJSON(env.pre) && inputs.skip_pre_releases)) }}
+        if: ${{ !inputs.dry_run || (contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases)) }}
         uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5  # v1.14.0
         env:
           pre: ${{ toJSON(contains(steps.version.outputs.release_type, 'pre')) }}

@@ -46,6 +46,12 @@ jobs:
       release_branches: main
 ```
 
+### Release types
+
+mathieudutour/github-tag-action uses semantic versioning. Valid release types: patch, minor, major. Each may be prefixed by "pre" for prereleases.
+
+To set default release type, use `default_bump`. This is fallback for parsed bump type - mathieudutour/github-tag-action [parses commit messages to determine bump type](https://github.com/mathieudutour/github-tag-action?tab=readme-ov-file#bumping) ("fix:" -> patch, "feat:" -> minor, "BREAKING CHANGE" -> major).
+
 ### Inputs
 
 ```yml
