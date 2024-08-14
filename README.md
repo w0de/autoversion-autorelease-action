@@ -50,8 +50,13 @@ jobs:
         description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
         required: false
         type: string
-        required: false
-        default: disabled
+      event:
+        description: Must be ${{ toJSON(github.event) }}.
+        required: true
+        type: string
+      event_name:
+        description: Must be ${{ github.event_name }}.
+        required: true
         type: string
       default_bump:
         description: Can be patch, minor or major.
@@ -72,8 +77,8 @@ jobs:
         description: Override default release with this custom value.
         required: false
         type: string
-      release_branch:
-        description: Refs on this branch are full releases - all other branches, prereleases.
+      release_branches:
+        description: Comma separated list of branches (JavaScript regular expression accepted) that will generate the release tags.
         required: false
         default: main
         type: string

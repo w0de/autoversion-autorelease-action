@@ -21,6 +21,14 @@ on:
         description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
         required: false
         type: string
+      event:
+        description: Must be ${{ toJSON(github.event) }}.
+        required: true
+        type: string
+      event_name:
+        description: Must be ${{ github.event_name }}.
+        required: true
+        type: string
       default_bump:
         description: Can be patch, minor or major.
         required: false
@@ -62,6 +70,12 @@ on:
       new_tag:
         description: The auto-bumped version tag.
         value: ${{ jobs.autorelease.outputs.new_tag }}
+      previous_tag:
+        description: The previous version tag.
+        value: ${{ jobs.autorelease.outputs.previous_tag }}
+      previous_version:
+        description: The previous version.
+        value: ${{ jobs.autorelease.outputs.previous_version }}
       release_type:
         description: The auto-bumped versions release type.
         value: ${{ jobs.autorelease.outputs.release_type }}
@@ -153,3 +167,11 @@ jobs:
           makeLatest: ${{ contains(steps.version.outputs.release_type, 'pre') }} # releases are always latest, prerelease are always not
           prerelease: ${{ contains(steps.version.outputs.release_type, 'pre') }} # {pre_}release_branches inputs determine if this is a prerelease
           tag: ${{ steps.version.outputs.new_tag }}
+
+      - name: debug
+        steps:
+          - name: output event name
+            run: |
+              echo ${{ github.event_name }}
+              echo ${{ toJSON(github.event) }}
+
