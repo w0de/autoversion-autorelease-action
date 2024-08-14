@@ -100,6 +100,8 @@ jobs:
       - name: version
         id: version
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
+        env:
+          pre_prefix: ${{ startsWith(inputs.default_bump, 'pre') && '' || 'pre' }}
         with:
           # opinionated
           create_annotated_tag: true
@@ -112,7 +114,7 @@ jobs:
           github_token: ${{ github.token }}
           release_branches: ${{ inputs.release_branches }}
           # calculated
-          default_prerelease_bump: "pre${{ inputs.default_bump }}"
+          default_prerelease_bump: "${{ env.pre_prefix }}${{ inputs.default_bump }}"
 
       - name: release
         id: release
