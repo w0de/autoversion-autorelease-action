@@ -169,9 +169,7 @@ jobs:
           tag: ${{ steps.version.outputs.new_tag }}
 
       - name: debug
-        steps:
-          - name: output event name
-            run: |
-              echo ${{ github.event_name }}
-              echo ${{ toJSON(github.event) }}
+        run: |
+          echo ${{ github.event_name }}
+          echo ${{ toJSON(github.event) }}
 
