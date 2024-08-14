@@ -71,7 +71,6 @@ on:
       release_type:
         description: The auto-bumped versions release type.
         value: ${{ jobs.autorelease.outputs.release_type }}
-
       # ncipollo/release-action
       artifact_upload_url:
         description: The URL for uploading assets to the release.
@@ -83,11 +82,9 @@ on:
         description: The HTML URL of the release.
         value: ${{ jobs.autorelease.outputs.release_url }}
 
-
 jobs:
   autorelease:
     runs-on: ubuntu-latest
-
     outputs:
       changelog: ${{ steps.version.outputs.changelog }}
       new_version: ${{ steps.version.outputs.new_version }}
@@ -96,7 +93,6 @@ jobs:
       artifact_upload_url: ${{ steps.release.outputs.upload_url }}
       release_id: ${{ steps.release.outputs.id }}
       release_url: ${{ steps.release.outputs.html_url }}
-
     steps:
       - name: checkout
         uses: actions/checkout@v4  # trusting github's internally developed action (not trusting others, so pinning at sha)
@@ -120,8 +116,10 @@ jobs:
 
       - name: release
         id: release
-        if: ${{ !(inputs.dry_run || (contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases)) }}
+        if: ${{ !(inputs.dry_run || (fromJSON(env.pre) && inputs.skip_pre_releases)) }}
         uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5  # v1.14.0
+        env:
+          pre: ${{ toJSON(contains(steps.version.outputs.release_type, 'pre')) }}
         with:
           # opinionated
           allowUpdates: true
@@ -138,13 +136,13 @@ jobs:
           artifacts: ${{ inputs.artifacts }}
           artifactContentType: ${{ inputs.artifacts_content_type }}
           commit: ${{ inputs.commit_sha }}
-          draft: ${{ contains(steps.version.outputs.release_type, 'pre') && inputs.draft_pre_releases }}
+          draft: ${{ fromJSON(env.pre) && inputs.draft_pre_releases }}
           name: ${{ inputs.name || steps.version.outputs.new_version }}
           token: ${{ github.token }}
           # calculated
-          artifactErrorsFailBuild: ${{ contains(steps.version.outputs.release_type, 'pre') }} # prereleases can fail their artifact upload
+          artifactErrorsFailBuild: ${{ fromJSON(env.pre) }} # prereleases can fail their artifact upload
           body: ${{ steps.version.outputs.changelog }}
-          makeLatest: ${{ contains(steps.version.outputs.release_type, 'pre') }} # releases are always latest, prerelease are always not
-          prerelease: ${{ contains(steps.version.outputs.release_type, 'pre') }} # {pre_}release_branches inputs determine if this is a prerelease
+          makeLatest: ${{ !fromJSON(env.pre) }} # releases are always latest, prerelease are always not
+          prerelease: ${{ fromJSON(env.pre) }} # {pre_}release_branches inputs determine if this is a prerelease
           tag: ${{ steps.version.outputs.new_tag }}
 
