@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   release:
-    environment: production
     uses: ./.github/workflows/tag-and-release.yml
     with:
       release_branches: main
