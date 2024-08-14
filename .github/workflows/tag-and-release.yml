@@ -21,9 +21,6 @@ on:
         description: The commit SHA value to add the tag. If specified, it uses this value instead GITHUB_SHA. It could be useful when a previous step merged a branch into github.ref.
         required: false
         type: string
-        required: false
-        default: disabled
-        type: string
       default_bump:
         description: Can be patch, minor or major.
         required: false
