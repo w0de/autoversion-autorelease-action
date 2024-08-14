@@ -25,8 +25,6 @@ jobs:
     uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
     with:
       release_branches: main
-    secrets:
-      token: ${{ github.token }}
 ```
 
 #### Create prereleases with opened pull requests
@@ -46,8 +44,6 @@ jobs:
     uses: w0de/autoversion-autorelease-action/.github/workflows/tag-and-release.yml@main
     with:
       release_branches: main
-    secrets:
-      token: ${{ github.token }}
 ```
 
 ### Inputs

@@ -1,0 +1,15 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+  
+permissions:
+  contents: write  # Required push tags.
+
+jobs:
+  release:
+    environment: production
+    uses: ./.github/workflows/tag-and-release.yml
+    with:
+      release_branches: main
