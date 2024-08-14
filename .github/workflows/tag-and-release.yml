@@ -97,6 +97,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4  # trusting github's internally developed action (not trusting others, so pinning at sha)
 
+      - name: verify GITHUB_REF
+        run: echo "running on branch '$GITHUB_REF'"
+
       - name: version
         id: version
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b  # v6.2
@@ -118,7 +121,7 @@ jobs:
 
       - name: release
         id: release
-        if: ${{ !inputs.dry_run || (contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases)) }}
+        if: ${{ !(inputs.dry_run || (contains(steps.version.outputs.release_type, 'pre') && inputs.skip_pre_releases)) }}
         uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5  # v1.14.0
         env:
           pre: ${{ toJSON(contains(steps.version.outputs.release_type, 'pre')) }}
