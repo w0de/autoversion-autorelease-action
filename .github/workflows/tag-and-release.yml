@@ -22,11 +22,11 @@ on:
         required: false
         type: string
       event:
-        description: Must be ${{ toJSON(github.event) }}.
+        description: Must be toJSON(github.event)
         required: true
         type: string
       event_name:
-        description: Must be ${{ github.event_name }}.
+        description: Must be github.event_name
         required: true
         type: string
       default_bump:
