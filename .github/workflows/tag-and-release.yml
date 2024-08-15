@@ -37,7 +37,7 @@ on:
         default: false
         type: boolean
       name:
-        description: Override default release with this custom value.
+        description: Prepend this custom value to version in release name.
         required: false
         type: string
       release_branches:
@@ -147,7 +147,7 @@ jobs:
           artifactContentType: ${{ inputs.artifacts_content_type }}
           commit: ${{ inputs.commit_sha }}
           draft: ${{ fromJSON(env.pre) && inputs.draft_pre_releases }}
-          name: ${{ inputs.name || steps.version.outputs.new_version }}
+          name: ${{ format('{{{0}{1}{2}}}', inputs.name || '', inputs.name && ' ' || '', steps.version.outputs.new_version) }}
           token: ${{ github.token }}
           # calculated
           artifactErrorsFailBuild: ${{ fromJSON(env.pre) }} # prereleases can fail their artifact upload
