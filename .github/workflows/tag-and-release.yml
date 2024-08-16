@@ -147,7 +147,7 @@ jobs:
           artifactContentType: ${{ inputs.artifacts_content_type }}
           commit: ${{ inputs.commit_sha }}
           draft: ${{ fromJSON(env.pre) && inputs.draft_pre_releases }}
-          name: ${{ format('{{{0}{1}{2}}}', inputs.name || '', inputs.name && ' ' || '', steps.version.outputs.new_version) }}
+          name: ${{ format('{0}{1}v{2}', inputs.name || '', inputs.name && ' ' || '', steps.version.outputs.new_version) }}
           token: ${{ github.token }}
           # calculated
           artifactErrorsFailBuild: ${{ fromJSON(env.pre) }} # prereleases can fail their artifact upload
